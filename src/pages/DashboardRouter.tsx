@@ -1,4 +1,5 @@
-import { useAuthStore } from "../app/store";
+
+import { useAuthStore } from "../api/authStore";
 import DepartmentDashboard from "../features/dashboard/department/DepartmentDashboard";
 import DoctorDashboard from "../features/dashboard/doctor/DoctorDashboard";
 import ExternalDashboard from "../features/dashboard/external/ExternalDashboard";

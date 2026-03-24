@@ -16,7 +16,7 @@ const LoginPage = () => {
       { email, password },
       {
         onSuccess: () => {
-          navigate("/"); // redirect after login
+          navigate("/dashboard"); // redirect after login
         },
       }
     );

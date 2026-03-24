@@ -1,4 +1,4 @@
-import { useAuthStore } from "./store";
+import { useAuthStore } from "../api/authStore";
 import {
   canViewVideo,
   canDownloadVideo,

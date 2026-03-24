@@ -15,18 +15,19 @@ import { RoleRoute } from "./RoleRoute";
 import AuditListPage from "../features/audit/AuditListPage";
 import AlertsPage from "../features/alerts/AlertsPage";
 import DashboardRouter from "../pages/DashboardRouter";
+import UsersDepartmentsPage from "../pages/UsersDepartmentsPage";
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
         {/* Public */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<LoginPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Dashboard */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <RoleRoute allowedRoles={["external_entity","system_admin","student", "hospital_admin", "doctor", "department_head"]}>
               <DashboardRouter />
@@ -102,6 +103,14 @@ const AppRoutes = () => {
             </RoleRoute>
           }
         />
+        <Route
+            path="/users"
+            element={
+              <RoleRoute allowedRoles={["system_admin", "hospital_admin"]}>
+                <UsersDepartmentsPage />
+              </RoleRoute>
+            }
+          />
       </Routes>
     </BrowserRouter>
   );

@@ -1,4 +1,5 @@
-import { api } from "../../api/client";
+
+import { api } from "../../api/api";
 import type { Video } from "../../types/video";
 
 

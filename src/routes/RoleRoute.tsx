@@ -1,6 +1,9 @@
+// src/routes/RoleRoute.tsx
+
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuthStore } from "../app/store";
+
 import type { Role } from "../types/auth";
+import { useAuthStore } from "../api/authStore";
 
 
 type Props = {
@@ -10,7 +13,13 @@ type Props = {
 
 export const RoleRoute = ({ children, allowedRoles }: Props) => {
   const user = useAuthStore((s) => s.user);
+  const isHydrated = useAuthStore((s) => s.isHydrated); // 🔥 ADD
   const location = useLocation();
+
+  // 🔥 WAIT until restore finishes
+  if (!isHydrated) {
+    return null; // or loading spinner
+  }
 
   // Not logged in
   if (!user) {
