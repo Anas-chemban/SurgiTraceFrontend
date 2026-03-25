@@ -10,6 +10,7 @@ import {
   Brain,
   Users,
   Settings,
+  DoorOpen,
 } from "lucide-react";
 
 /**
@@ -77,6 +78,11 @@ const allItems = {
     icon: Users,
     path: "/users",
   },
+  operating_rooms: {
+    label: "Operating Rooms",
+    icon: DoorOpen, 
+    path: "/rooms",
+  },
   settings: {
     label: "Settings",
     icon: Settings,
@@ -97,6 +103,7 @@ export const roleSidebar: Record<UserRole, SidebarItem[]> = {
     allItems.audit,
     allItems.ai,
     allItems.users,
+    allItems.operating_rooms,
     allItems.settings,
   ],
 
@@ -137,6 +144,7 @@ export const roleSidebar: Record<UserRole, SidebarItem[]> = {
     allItems.audit,
     allItems.ai,
     allItems.users,
+    allItems.operating_rooms,
     allItems.settings,
   ],
 };

@@ -4,19 +4,19 @@ import LoginPage from "../features/auth/LoginPage";
 
 import Unauthorized from "../pages/Unauthorized";
 
-
-import SurgeryCreatePage from "../features/surgeries/SurgeryCreatePage";
-import SurgeryEditPage from "../features/surgeries/SurgeryEditPage";
-
-import VideoListPage from "../features/videos/VideoListPage";
-import VideoDetailPage from "../features/videos/VideoDetailPage";
-
 import { RoleRoute } from "./RoleRoute";
-import AuditListPage from "../features/audit/AuditListPage";
-import AlertsPage from "../features/alerts/AlertsPage";
+
+
 import DashboardRouter from "../pages/DashboardRouter";
 import UsersDepartmentsPage from "../features/dashboard/systemadmin/UsersDepartmentsPage";
 import SurgeriesPage from "../features/dashboard/systemadmin/SurgeriesPage";
+import RoomsPage from "../features/dashboard/systemadmin/RoomPage";
+import VedioPage from "../features/dashboard/systemadmin/VedioPage";
+import AlertPage from "../features/dashboard/systemadmin/AlertPage";
+import ReportsPage from "../features/dashboard/systemadmin/ReportsPage";
+import AuditPage from "../features/dashboard/systemadmin/AuditPage";
+import AiPage from "../features/dashboard/systemadmin/AiPage";
+import SettingsPage from "../features/dashboard/systemadmin/SettingsPage";
 
 const AppRoutes = () => {
   return (
@@ -51,59 +51,68 @@ const AppRoutes = () => {
             path="/alerts"
             element={
               <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
-                <AlertsPage />
+                <AlertPage />
               </RoleRoute>
             }
           />
-
-           {/* audit */}
+         {/* Reports */}
         <Route
-            path="/audit/logs"
+            path="/reports"
             element={
-              <RoleRoute allowedRoles={["external_entity","system_admin","student", "hospital_admin", "doctor", "department_head"]}>
-                <AuditListPage />
+              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+                <ReportsPage />
+              </RoleRoute>
+            }
+          />
+          {/* audit */}
+        <Route
+            path="/audit"
+            element={
+              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+                <AuditPage />
+              </RoleRoute>
+            }
+          />
+          {/* audit */}
+        <Route
+            path="/ai"
+            element={
+              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+                <AiPage />
+              </RoleRoute>
+            }
+          />
+          {/* audit */}
+        <Route
+            path="/settings"
+            element={
+              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+                <SettingsPage />
               </RoleRoute>
             }
           />
 
-        <Route
-          path="/surgeries/create"
-          element={
-            <RoleRoute allowedRoles={["external_entity","student","system_admin", "hospital_admin", "doctor", "department_head"]}>
-              <SurgeryCreatePage />
-            </RoleRoute>
-          }
-        />
-
-        <Route
-          path="/surgeries/edit/:id"
-          element={
-            <RoleRoute allowedRoles={["external_entity","student","system_admin", "hospital_admin", "doctor", "department_head"]}>
-              <SurgeryEditPage />
-            </RoleRoute>
-          }
-        />
+           
 
         {/* Videos */}
         <Route
           path="/videos"
           element={
             <RoleRoute allowedRoles={["external_entity","student","system_admin", "hospital_admin", "doctor", "department_head"]}>
-              <VideoListPage />
+              <VedioPage />
+            </RoleRoute>
+          }
+        />
+        {/* Room */}
+        <Route
+          path="/rooms"
+          element={
+            <RoleRoute allowedRoles={["external_entity","student","system_admin", "hospital_admin", "doctor", "department_head"]}>
+              <RoomsPage/>  
             </RoleRoute>
           }
         />
 
-        <Route
-          path="/videos/:id"
-          element={
-            <RoleRoute
-              allowedRoles={["external_entity","student","system_admin", "hospital_admin", "doctor", "department_head"]}
-            >
-              <VideoDetailPage />
-            </RoleRoute>
-          }
-        />
         <Route
             path="/users"
             element={

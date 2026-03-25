@@ -194,8 +194,15 @@ export default function SurgeriesPage() {
 
         {/* HEADER */}
         <div className="flex justify-between">
-          <h1 className="text-xl font-semibold">Surgeries</h1>
+          <div>
+            <h1 className="text-2xl font-semibold">
+                Surgeries
 
+            </h1>
+            <p className="text-gray-500 text-sm">
+                Manage all surgical procedures
+            </p>
+            </div>
           <button
             onClick={() => setOpen(true)}
             className="bg-teal-600 text-white px-4 py-2 rounded"
