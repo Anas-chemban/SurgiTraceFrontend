@@ -4,7 +4,7 @@ import LoginPage from "../features/auth/LoginPage";
 
 import Unauthorized from "../pages/Unauthorized";
 
-import SurgeryListPage from "../features/surgeries/SurgeryListPage";
+
 import SurgeryCreatePage from "../features/surgeries/SurgeryCreatePage";
 import SurgeryEditPage from "../features/surgeries/SurgeryEditPage";
 
@@ -15,7 +15,8 @@ import { RoleRoute } from "./RoleRoute";
 import AuditListPage from "../features/audit/AuditListPage";
 import AlertsPage from "../features/alerts/AlertsPage";
 import DashboardRouter from "../pages/DashboardRouter";
-import UsersDepartmentsPage from "../pages/UsersDepartmentsPage";
+import UsersDepartmentsPage from "../features/dashboard/systemadmin/UsersDepartmentsPage";
+import SurgeriesPage from "../features/dashboard/systemadmin/SurgeriesPage";
 
 const AppRoutes = () => {
   return (
@@ -40,7 +41,7 @@ const AppRoutes = () => {
           path="/surgeries"
           element={
             <RoleRoute allowedRoles={["external_entity","system_admin","student", "hospital_admin", "doctor", "department_head"]}>
-              <SurgeryListPage />
+              <SurgeriesPage />
             </RoleRoute>
           }
         />

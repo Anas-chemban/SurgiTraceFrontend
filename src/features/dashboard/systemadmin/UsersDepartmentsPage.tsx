@@ -1,8 +1,8 @@
 // src/pages/UsersDepartmentsPage.tsx
 
 import { useEffect, useState } from "react";
-import DashboardLayout from "../layouts/DashboardLayout";
-import { api } from "../api/api";
+import DashboardLayout from "../../../layouts/DashboardLayout";
+import { api } from "../../../api/api";
 
 
 
