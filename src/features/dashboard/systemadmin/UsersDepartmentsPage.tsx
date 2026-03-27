@@ -1,10 +1,6 @@
-// src/pages/UsersDepartmentsPage.tsx
-
 import { useEffect, useState } from "react";
 import DashboardLayout from "../../../layouts/DashboardLayout";
 import { api } from "../../../api/api";
-
-
 
 type User = {
   id: number;
@@ -23,10 +19,8 @@ export default function UsersDepartmentsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [open, setOpen] = useState(false);
 
-  // ✅ FORM STATE (UPDATED)
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -35,7 +29,9 @@ export default function UsersDepartmentsPage() {
     department: "",
   });
 
-  // ✅ FETCH USERS
+  //////////////////////////////////////
+  // FETCH
+  //////////////////////////////////////
   const fetchUsers = async () => {
     try {
       const res = await api.get("/accounts/users/");
@@ -45,7 +41,6 @@ export default function UsersDepartmentsPage() {
     }
   };
 
-  // ✅ FETCH DEPARTMENTS
   const fetchDepartments = async () => {
     try {
       const res = await api.get("/accounts/departments/");
@@ -64,9 +59,17 @@ export default function UsersDepartmentsPage() {
     load();
   }, []);
 
-  // ✅ CREATE USER
+  //////////////////////////////////////
+  // CREATE
+  //////////////////////////////////////
   const handleCreate = async () => {
     try {
+      // 🔥 simple validation
+      if (!form.name || !form.email || !form.password) {
+        alert("Please fill all required fields");
+        return;
+      }
+
       const payload: any = {
         name: form.name,
         email: form.email,
@@ -74,12 +77,15 @@ export default function UsersDepartmentsPage() {
         password: form.password,
       };
 
-      // 🔥 ADD DEPARTMENT ONLY WHEN REQUIRED
       if (
         form.role === "doctor" ||
         form.role === "department_head"
       ) {
-        payload.department = form.department;
+        if (!form.department) {
+          alert("Select department");
+          return;
+        }
+        payload.department = Number(form.department);
       }
 
       await api.post("/accounts/users/", payload);
@@ -94,12 +100,15 @@ export default function UsersDepartmentsPage() {
         department: "",
       });
 
-      fetchUsers(); // refresh table
-    } catch (err) {
-      console.error(err);
+      fetchUsers();
+    } catch (err: any) {
+      console.log(err.response?.data);
     }
   };
 
+  //////////////////////////////////////
+  // UI
+  //////////////////////////////////////
   return (
     <DashboardLayout title="Users & Departments">
       <div className="space-y-6">
@@ -143,23 +152,17 @@ export default function UsersDepartmentsPage() {
               <tbody>
                 {users.map((u) => (
                   <tr key={u.id} className="border-t">
-
                     <td className="p-3 font-medium">{u.name}</td>
-
                     <td>{u.email}</td>
-
                     <td className="capitalize">
                       {formatRole(u.role)}
                     </td>
-
                     <td>{u.department_name ?? "—"}</td>
-
                     <td>
                       <span className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">
                         active
                       </span>
                     </td>
-
                   </tr>
                 ))}
               </tbody>
@@ -172,7 +175,14 @@ export default function UsersDepartmentsPage() {
         {open && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-            <div className="bg-white p-6 rounded-xl w-[400px] space-y-4">
+            {/* ✅ FORM FIXED HERE */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreate();
+              }}
+              className="bg-white p-6 rounded-xl w-[400px] space-y-4"
+            >
 
               <h2 className="text-lg font-semibold">Add User</h2>
 
@@ -180,6 +190,7 @@ export default function UsersDepartmentsPage() {
               <input
                 className="w-full border p-2 rounded"
                 placeholder="Full Name"
+                autoComplete="name"
                 value={form.name}
                 onChange={(e) =>
                   setForm({ ...form, name: e.target.value })
@@ -188,8 +199,10 @@ export default function UsersDepartmentsPage() {
 
               {/* EMAIL */}
               <input
+                type="email"
                 className="w-full border p-2 rounded"
                 placeholder="Email"
+                autoComplete="email"
                 value={form.email}
                 onChange={(e) =>
                   setForm({ ...form, email: e.target.value })
@@ -201,6 +214,7 @@ export default function UsersDepartmentsPage() {
                 type="password"
                 className="w-full border p-2 rounded"
                 placeholder="Password"
+                autoComplete="new-password"
                 value={form.password}
                 onChange={(e) =>
                   setForm({ ...form, password: e.target.value })
@@ -227,7 +241,7 @@ export default function UsersDepartmentsPage() {
                 <option value="system_admin">System Admin</option>
               </select>
 
-              {/* 🔥 CONDITIONAL DEPARTMENT */}
+              {/* DEPARTMENT */}
               {(form.role === "doctor" ||
                 form.role === "department_head") && (
                 <select
@@ -251,19 +265,22 @@ export default function UsersDepartmentsPage() {
 
               {/* ACTIONS */}
               <div className="flex justify-end gap-2">
-                <button onClick={() => setOpen(false)}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                >
                   Cancel
                 </button>
 
                 <button
-                  onClick={handleCreate}
+                  type="submit"
                   className="bg-teal-600 text-white px-3 py-1 rounded"
                 >
                   Create
                 </button>
               </div>
 
-            </div>
+            </form>
           </div>
         )}
 
@@ -272,7 +289,7 @@ export default function UsersDepartmentsPage() {
   );
 }
 
-// 🔧 FORMAT ROLE
+// FORMAT ROLE
 function formatRole(role: string) {
   return role
     .replace("_", " ")

@@ -17,6 +17,7 @@ import ReportsPage from "../features/dashboard/systemadmin/ReportsPage";
 import AuditPage from "../features/dashboard/systemadmin/AuditPage";
 import AiPage from "../features/dashboard/systemadmin/AiPage";
 import SettingsPage from "../features/dashboard/systemadmin/SettingsPage";
+import PengingVedioPage from "../features/dashboard/systemadmin/PengingVedioPage";
 
 const AppRoutes = () => {
   return (
@@ -52,6 +53,15 @@ const AppRoutes = () => {
             element={
               <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
                 <AlertPage />
+              </RoleRoute>
+            }
+          />
+         {/* Pending Video */}
+        <Route
+            path="/PendingVideos"
+            element={
+              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+                <PengingVedioPage />
               </RoleRoute>
             }
           />
@@ -91,9 +101,6 @@ const AppRoutes = () => {
               </RoleRoute>
             }
           />
-
-           
-
         {/* Videos */}
         <Route
           path="/videos"

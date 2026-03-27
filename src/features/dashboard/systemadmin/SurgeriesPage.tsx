@@ -14,6 +14,8 @@ type Surgery = {
   room_number: string;
   scheduled_start: string;
   scheduled_end: string;
+  actual_start: string | null;
+  actual_end: string | null;
   status: "scheduled" | "in_progress" | "completed";
   consent_signed: boolean;
 };
@@ -47,6 +49,8 @@ export default function SurgeriesPage() {
   const [editForm, setEditForm] = useState<any>(null);
 
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [detailItem, setDetailItem] = useState<any>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const [doctors, setDoctors] = useState<User[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -60,6 +64,8 @@ export default function SurgeriesPage() {
     room: "",
     scheduled_start: "",
     scheduled_end: "",
+    actual_start: "",  
+    actual_end: "",     
     status: "scheduled",
     consent_signed: false,
   });
@@ -67,6 +73,15 @@ export default function SurgeriesPage() {
   //////////////////////////////////////
   // FETCH
   //////////////////////////////////////
+  const handleViewDetail = async (id: number) => {
+    try {
+      const res = await api.get(`/surgeries/surgeries/${id}/`);
+      setDetailItem(res.data);
+      setDetailOpen(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const fetchAll = async () => {
     try {
       const [s, u, d, r] = await Promise.all([
@@ -118,7 +133,10 @@ export default function SurgeriesPage() {
   //////////////////////////////////////
   // DATE FIX
   //////////////////////////////////////
-  const formatDate = (val: string) => (val ? val + ":00Z" : "");
+  const formatDate = (val: string) => {
+    if (!val) return null;
+    return new Date(val).toISOString();
+  };
 
   //////////////////////////////////////
   // CREATE
@@ -131,13 +149,34 @@ export default function SurgeriesPage() {
       room: Number(form.room),
       scheduled_start: formatDate(form.scheduled_start),
       scheduled_end: formatDate(form.scheduled_end),
+      actual_start: form.actual_start ? formatDate(form.actual_start) : null,
+      actual_end: form.actual_end ? formatDate(form.actual_end) : null,
     };
-
-    await api.post("/surgeries/surgeries/", payload);
-    setOpen(false);
-    fetchAll();
+    console.log(payload)
+    try {
+      await api.post("/surgeries/surgeries/", payload);
+      setOpen(false);
+      fetchAll();
+    } catch (err: any) {
+      console.log(err.response?.data); // 👈 THIS WILL EXPOSE THE TRUTH
+    }
+    
   };
 
+
+  const formatToIST = (dateStr?: string) => {
+    if (!dateStr) return "—";
+
+    return new Date(dateStr).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
   //////////////////////////////////////
   // UPDATE
   //////////////////////////////////////
@@ -146,12 +185,17 @@ export default function SurgeriesPage() {
 
     const payload = {
       ...editForm,
-      doctor: Number(editForm.doctor),
-      department: Number(editForm.department),
-      room: Number(editForm.room),
+      doctor: editForm.doctor ? Number(editForm.doctor) : null,
+      department: editForm.department ? Number(editForm.department) : null,
+      room: editForm.room ? Number(editForm.room) : null,
+
       scheduled_start: formatDate(editForm.scheduled_start),
       scheduled_end: formatDate(editForm.scheduled_end),
+
+      actual_start: formatDate(editForm.actual_start),
+      actual_end: formatDate(editForm.actual_end),
     };
+
 
     await api.patch(`/surgeries/surgeries/${editItem.id}/`, payload);
 
@@ -227,6 +271,7 @@ export default function SurgeriesPage() {
                   <th>Status</th>
                   <th>Consent</th>
                   <th>Actions</th>
+                  <th>Details</th>
                 </tr>
               </thead>
 
@@ -259,6 +304,8 @@ export default function SurgeriesPage() {
                             room: s.room,
                             scheduled_start: s.scheduled_start.slice(0, 16),
                             scheduled_end: s.scheduled_end.slice(0, 16),
+                            actual_start: s.actual_start ? s.actual_start.slice(0, 16) : "",
+                            actual_end: s.actual_end ? s.actual_end.slice(0, 16) : "",
                             status: s.status,
                             consent_signed: s.consent_signed,
                           });
@@ -275,6 +322,14 @@ export default function SurgeriesPage() {
                         Delete
                       </button>
                     </td>
+                    <td>
+                      <button
+                        onClick={() => handleViewDetail(s.id)}
+                        className="text-green-600"
+                      >
+                        Detail
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -285,84 +340,234 @@ export default function SurgeriesPage() {
         {/* CREATE MODAL */}
         {open && (
           <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-            <div className="bg-white p-6 rounded w-[400px] space-y-3">
+          <div className="bg-white p-6 rounded w-[500px] space-y-4 max-h-[90vh] overflow-y-auto">
 
-              <h2 className="font-semibold">New Surgery</h2>
+            <h2 className="text-lg font-semibold">New Surgery</h2>
 
-              <input placeholder="Title" className="w-full border p-2"
-                onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            {/* TITLE */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Title</label>
+              <input
+                className="w-full border p-2 rounded"
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+              />
+            </div>
 
-              <input placeholder="Patient Ref" className="w-full border p-2"
-                onChange={(e) => setForm({ ...form, patient_reference: e.target.value })} />
+            {/* PATIENT */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Patient Reference</label>
+              <input
+                className="w-full border p-2 rounded"
+                onChange={(e) =>
+                  setForm({ ...form, patient_reference: e.target.value })
+                }
+              />
+            </div>
 
-              <select className="w-full border p-2"
-                onChange={(e) => setForm({ ...form, department: e.target.value })}>
+            {/* DEPARTMENT */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Department</label>
+              <select
+                className="w-full border p-2 rounded"
+                onChange={(e) =>
+                  setForm({ ...form, department: e.target.value })
+                }
+              >
                 <option>Select Department</option>
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
               </select>
+            </div>
 
-              <select className="w-full border p-2"
-                onChange={(e) => setForm({ ...form, doctor: e.target.value })}>
+            {/* DOCTOR */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Doctor</label>
+              <select
+                className="w-full border p-2 rounded"
+                onChange={(e) =>
+                  setForm({ ...form, doctor: e.target.value })
+                }
+              >
                 <option>Select Doctor</option>
                 {filteredDoctors.map((d) => (
                   <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
               </select>
+            </div>
 
-              <select className="w-full border p-2"
-                onChange={(e) => setForm({ ...form, room: e.target.value })}>
+            {/* ROOM */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Room</label>
+              <select
+                className="w-full border p-2 rounded"
+                onChange={(e) =>
+                  setForm({ ...form, room: e.target.value })
+                }
+              >
                 <option>Select Room</option>
                 {filteredRooms.map((r) => (
                   <option key={r.id} value={r.id}>{r.room_number}</option>
                 ))}
               </select>
+            </div>
 
-              <input type="datetime-local" className="w-full border p-2"
-                onChange={(e) => setForm({ ...form, scheduled_start: e.target.value })} />
+            {/* SCHEDULED */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Scheduled Start
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full border p-2 rounded"
+                  onChange={(e) =>
+                    setForm({ ...form, scheduled_start: e.target.value })
+                  }
+                />
+              </div>
 
-              <input type="datetime-local" className="w-full border p-2"
-                onChange={(e) => setForm({ ...form, scheduled_end: e.target.value })} />
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Scheduled End
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full border p-2 rounded"
+                  onChange={(e) =>
+                    setForm({ ...form, scheduled_end: e.target.value })
+                  }
+                />
+              </div>
+            </div>
 
-              <label>
-                <input type="checkbox"
-                  onChange={(e) => setForm({ ...form, consent_signed: e.target.checked })} />
-                Consent
-              </label>
+            {/* ACTUAL (OPTIONAL) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Actual Start (optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full border p-2 rounded"
+                  onChange={(e) =>
+                    setForm({ ...form, actual_start: e.target.value })
+                  }
+                />
+              </div>
 
-              <div className="flex justify-end gap-2">
-                <button onClick={() => setOpen(false)}>Cancel</button>
-                <button onClick={handleCreate}
-                  className="bg-teal-600 text-white px-3 py-1 rounded">
-                  Create
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Actual End (optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full border p-2 rounded"
+                  onChange={(e) =>
+                    setForm({ ...form, actual_end: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            {/* CONSENT */}
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                onChange={(e) =>
+                  setForm({ ...form, consent_signed: e.target.checked })
+                }
+              />
+              Consent Signed
+            </label>
+
+            {/* BUTTONS */}
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setOpen(false)} className="px-4 py-1 border rounded">
+                Cancel
+              </button>
+
+              <button
+                onClick={handleCreate}
+                className="bg-teal-600 text-white px-4 py-1 rounded"
+              >
+                Create
+              </button>
+            </div>
+
+          </div>
+        </div>
+        )}
+
+        {/* DETAIL MODAL */}
+        {detailOpen && detailItem && (
+          <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+            <div className="bg-white p-6 rounded w-[450px] space-y-3">
+
+              <h2 className="text-lg font-semibold">Surgery Details</h2>
+
+              <div className="text-sm space-y-2">
+
+                <p><strong>ID:</strong> S{detailItem.id}</p>
+                <p><strong>Title:</strong> {detailItem.title}</p>
+                <p><strong>Patient Ref:</strong> {detailItem.patient_reference}</p>
+
+                <p><strong>Doctor:</strong> {detailItem.doctor_name}</p>
+                <p><strong>Department:</strong> {detailItem.department_name}</p>
+                <p><strong>Room:</strong> {detailItem.room_number}</p>
+
+                <p><strong>Status:</strong> {detailItem.status}</p>
+
+                <p><strong>Scheduled Start:</strong> {formatToIST(detailItem.scheduled_start)}</p>
+                <p><strong>Scheduled End:</strong> {formatToIST(detailItem.scheduled_end)}</p>
+
+                <p><strong>Actual Start:</strong> {formatToIST(detailItem.actual_start)}</p>
+                <p><strong>Actual End:</strong> {formatToIST(detailItem.actual_end)}</p>
+
+                <p><strong>Consent:</strong> {detailItem.consent_signed ? "Yes" : "No"}</p>
+
+                <p><strong>Created At:</strong> {detailItem.created_at}</p>
+
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setDetailOpen(false);
+                    setDetailItem(null);
+                  }}
+                  className="bg-teal-600 text-white px-4 py-1 rounded"
+                >
+                  OK
                 </button>
               </div>
+
             </div>
           </div>
         )}
-
-        {/* EDIT MODAL */}
         {/* EDIT MODAL */}
         {editItem && editForm && (
-          <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-            <div className="bg-white p-6 rounded w-[420px] space-y-3">
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+          <div className="bg-white p-6 rounded w-[500px] space-y-4 max-h-[90vh] overflow-y-auto">
 
-              <h2 className="font-semibold text-lg">Edit Surgery</h2>
+            <h2 className="text-lg font-semibold">Edit Surgery</h2>
 
-              {/* TITLE */}
+            {/* TITLE */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Title</label>
               <input
-                placeholder="Title"
                 value={editForm.title}
                 onChange={(e) =>
                   setEditForm({ ...editForm, title: e.target.value })
                 }
                 className="w-full border p-2 rounded"
               />
+            </div>
 
-              {/* PATIENT REF */}
+            {/* PATIENT */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Patient Reference</label>
               <input
-                placeholder="Patient Ref"
                 value={editForm.patient_reference}
                 onChange={(e) =>
                   setEditForm({
@@ -372,8 +577,11 @@ export default function SurgeriesPage() {
                 }
                 className="w-full border p-2 rounded"
               />
+            </div>
 
-              {/* DEPARTMENT */}
+            {/* DEPARTMENT */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Department</label>
               <select
                 value={editForm.department}
                 className="w-full border p-2 rounded"
@@ -388,13 +596,14 @@ export default function SurgeriesPage() {
               >
                 <option>Select Department</option>
                 {departments.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
+                  <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
               </select>
+            </div>
 
-              {/* DOCTOR (FILTERED) */}
+            {/* DOCTOR */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Doctor</label>
               <select
                 value={editForm.doctor}
                 className="w-full border p-2 rounded"
@@ -412,13 +621,14 @@ export default function SurgeriesPage() {
                         )?.name && doc.role === "doctor"
                   )
                   .map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
+                    <option key={d.id} value={d.id}>{d.name}</option>
                   ))}
               </select>
+            </div>
 
-              {/* ROOM (FILTERED) */}
+            {/* ROOM */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Room</label>
               <select
                 value={editForm.room}
                 className="w-full border p-2 rounded"
@@ -434,76 +644,119 @@ export default function SurgeriesPage() {
                       r.status === "available"
                   )
                   .map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.room_number}
-                    </option>
+                    <option key={r.id} value={r.id}>{r.room_number}</option>
                   ))}
               </select>
+            </div>
 
-              {/* START */}
-              <input
-                type="datetime-local"
-                value={editForm.scheduled_start}
-                onChange={(e) =>
-                  setEditForm({
-                    ...editForm,
-                    scheduled_start: e.target.value,
-                  })
-                }
-                className="w-full border p-2 rounded"
-              />
-
-              {/* END */}
-              <input
-                type="datetime-local"
-                value={editForm.scheduled_end}
-                onChange={(e) =>
-                  setEditForm({
-                    ...editForm,
-                    scheduled_end: e.target.value,
-                  })
-                }
-                className="w-full border p-2 rounded"
-              />
-
-              {/* CONSENT */}
-              <label className="flex items-center gap-2">
+            {/* SCHEDULED */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Scheduled Start</label>
                 <input
-                  type="checkbox"
-                  checked={editForm.consent_signed}
+                  type="datetime-local"
+                  value={editForm.scheduled_start}
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,
-                      consent_signed: e.target.checked,
+                      scheduled_start: e.target.value,
                     })
                   }
+                  className="w-full border p-2 rounded"
                 />
-                Consent
-              </label>
-
-              {/* BUTTONS */}
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => {
-                    setEditItem(null);
-                    setEditForm(null);
-                  }}
-                  className="px-4 py-1 border rounded"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  onClick={handleUpdate}
-                  className="bg-teal-600 text-white px-4 py-1 rounded"
-                >
-                  Update
-                </button>
               </div>
 
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Scheduled End</label>
+                <input
+                  type="datetime-local"
+                  value={editForm.scheduled_end}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      scheduled_end: e.target.value,
+                    })
+                  }
+                  className="w-full border p-2 rounded"
+                />
+              </div>
             </div>
+
+            {/* ACTUAL (OPTIONAL) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Actual Start (optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={editForm.actual_start || ""}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      actual_start: e.target.value,
+                    })
+                  }
+                  className="w-full border p-2 rounded"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Actual End (optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={editForm.actual_end || ""}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      actual_end: e.target.value,
+                    })
+                  }
+                  className="w-full border p-2 rounded"
+                />
+              </div>
+            </div>
+
+            {/* CONSENT */}
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={editForm.consent_signed}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    consent_signed: e.target.checked,
+                  })
+                }
+              />
+              Consent Signed
+            </label>
+
+            {/* BUTTONS */}
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => {
+                  setEditItem(null);
+                  setEditForm(null);
+                }}
+                className="px-4 py-1 border rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleUpdate}
+                className="bg-teal-600 text-white px-4 py-1 rounded"
+              >
+                Update
+              </button>
+            </div>
+
           </div>
-        )}
+        </div>
+      )}
 
         {/* DELETE MODAL */}
         {deleteId && (
