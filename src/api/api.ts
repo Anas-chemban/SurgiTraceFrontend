@@ -1,10 +1,8 @@
-// src/api/api.ts
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "./authStore";
 
-
 export const api = axios.create({
-  baseURL: "http://localhost:8000/",
+  baseURL: "http://127.0.0.1:8000/",
 });
 
 /**
@@ -45,16 +43,19 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
 
+    // 🔴 Only handle 401
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       const { refresh, logout } = useAuthStore.getState();
 
+      // ❌ No refresh token → logout
       if (!refresh) {
         logout();
         return Promise.reject(error);
       }
 
+      // 🔁 If already refreshing → queue requests
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh((token: string) => {
@@ -67,24 +68,30 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axios.post(
-          "http://localhost:8000/accounts/refresh/",
-          { refresh }
-        );
+        // ✅ CORRECT ENDPOINT
+        const res = await api.post("/accounts/token/refresh/", {
+          refresh,
+        });
 
         const newAccess = res.data.access;
 
-        // ✅ update store
+        // ✅ update store + localStorage
         useAuthStore.setState({ access: newAccess });
         localStorage.setItem("access", newAccess);
 
+        // ✅ run queued requests
         onRefreshed(newAccess);
 
+        // retry original request
         originalRequest.headers.Authorization = `Bearer ${newAccess}`;
         return api(originalRequest);
 
-      } catch (err) {
-        logout();
+      } catch (err: any) {
+        // 🔥 ONLY logout if refresh token is invalid
+        if (err.response?.status === 401) {
+          logout();
+        }
+
         return Promise.reject(err);
 
       } finally {

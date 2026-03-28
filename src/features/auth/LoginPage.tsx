@@ -15,9 +15,35 @@ const LoginPage = () => {
     mutate(
       { email, password },
       {
-        onSuccess: () => {
-          navigate("/dashboard"); // redirect after login
-        },
+        onSuccess: (data) => {
+        const role = data.user.role;
+
+        switch (role) {
+          case "system_admin":
+          case "hospital_admin":
+            navigate("/admin/dashboard");
+            break;
+
+          case "doctor":
+            navigate("/doctor/dashboard");
+            break;
+
+          case "department_head":
+            navigate("/department/dashboard");
+            break;
+
+          case "student":
+            navigate("/student/dashboard");
+            break;
+
+          case "external_entity":
+            navigate("/external/dashboard");
+            break;
+
+          default:
+            navigate("/unauthorized");
+        }
+      },
       }
     );
   };

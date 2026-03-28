@@ -156,52 +156,47 @@ export default function RoomsPage() {
                   <th>Department</th>
                   <th>Camera</th>
                   <th>Status</th>
-                  <th>Actions</th> {/* ✅ NEW */}
+                  <th>Actions</th>
                 </tr>
               </thead>
 
               <tbody>
-                {rooms.map((r) => (
-                  <tr key={r.id} className="border-t">
+              {rooms.map((r) => (
+                <tr key={r.id} className="border-t">
+                  <td className="p-3 font-medium">{r.room_number}</td>
+                  <td>{r.department_name}</td>
+                  <td>{r.camera_id}</td>
+                  <td>
+                    <span className={`px-2 py-1 rounded text-xs ${getStatusClass(r.status)}`}>
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="space-x-2">
+                    <button
+                      onClick={() => {
+                        setEditItem(r);
+                        setEditForm({
+                          room_number: r.room_number,
+                          department: r.department,
+                          camera_id: r.camera_id,
+                          status: r.status,
+                        });
+                      }}
+                      className="text-blue-600"
+                    >
+                      Edit
+                    </button>
 
-                    <td className="p-3 font-medium">{r.room_number}</td>
-                    <td>{r.department_name}</td>
-                    <td>{r.camera_id}</td>
-
-                    <td>
-                      <span className={`px-2 py-1 rounded text-xs ${getStatusClass(r.status)}`}>
-                        {r.status}
-                      </span>
-                    </td>
-
-                    {/* ✅ ACTION BUTTONS */}
-                    <td className="space-x-2">
-                      <button
-                        onClick={() => {
-                          setEditItem(r);
-                          setEditForm({
-                            room_number: r.room_number,
-                            department: r.department,
-                            camera_id: r.camera_id,
-                            status: r.status,
-                          });
-                        }}
-                        className="text-blue-600"
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        onClick={() => setDeleteId(r.id)}
-                        className="text-red-500"
-                      >
-                        Delete
-                      </button>
-                    </td>
-
-                  </tr>
-                ))}
-              </tbody>
+                    <button
+                      onClick={() => setDeleteId(r.id)}
+                      className="text-red-500"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
 
             </table>
           )}

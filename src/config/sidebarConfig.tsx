@@ -23,8 +23,7 @@ export type SidebarItem = {
 };
 
 /**
- * UI Role Types (used for sidebar rendering)
- * ⚠️ These are NOT backend roles directly
+ * UI Role Types
  */
 export type UserRole =
   | "hospital_admin"
@@ -35,124 +34,173 @@ export type UserRole =
   | "system_admin";
 
 /**
- * ALL MENU ITEMS (single source of truth)
+ * 🔥 BASE PATH PER ROLE
  */
-const allItems = {
+export const getBasePath = (role: UserRole): string => {
+  switch (role) {
+    case "hospital_admin":
+    case "system_admin":
+      return "/admin";
+
+    case "doctor":
+      return "/doctor";
+
+    case "department":
+      return "/department";
+
+    case "student":
+      return "/student";
+
+    case "external":
+      return "/external";
+
+    default:
+      return "";
+  }
+};
+
+/**
+ * 🔥 MENU DEFINITIONS (NO PATHS HERE)
+ */
+const menu = {
   dashboard: {
     label: "Dashboard",
     icon: LayoutDashboard,
-    path: "/dashboard",
+    slug: "dashboard",
   },
   surgeries: {
     label: "Surgeries",
     icon: Scissors,
-    path: "/surgeries",
+    slug: "surgeries",
   },
   videos: {
     label: "Videos",
     icon: Video,
-    path: "/videos",
+    slug: "videos",
   },
-  PendingVideos: {
+  pendingVideos: {
     label: "Pending Videos",
     icon: Video,
-    path: "/PendingVideos",
+    slug: "pending-videos",
   },
   alerts: {
     label: "Alerts",
     icon: Bell,
-    path: "/alerts",
+    slug: "alerts",
   },
   reports: {
     label: "Reports",
     icon: FileText,
-    path: "/reports",
+    slug: "reports",
   },
   audit: {
     label: "Audit Logs",
     icon: ClipboardList,
-    path: "/audit",
+    slug: "audit",
   },
   ai: {
     label: "AI Analysis",
     icon: Brain,
-    path: "/ai",
+    slug: "ai",
   },
   users: {
     label: "Users & Depts",
     icon: Users,
-    path: "/users",
+    slug: "users",
   },
-  operating_rooms: {
+  rooms: {
     label: "Operating Rooms",
-    icon: DoorOpen, 
-    path: "/rooms",
+    icon: DoorOpen,
+    slug: "rooms",
   },
   settings: {
     label: "Settings",
     icon: Settings,
-    path: "/settings",
+    slug: "settings",
   },
 };
 
 /**
- * ROLE → SIDEBAR MAPPING
+ * 🔥 BUILD ITEM WITH BASE PATH
  */
-export const roleSidebar: Record<UserRole, SidebarItem[]> = {
-  hospital_admin: [
-    allItems.dashboard,
-    allItems.surgeries,
-    allItems.videos,
-    allItems.PendingVideos,
-    allItems.alerts,
-    allItems.reports,
-    allItems.audit,
-    allItems.ai,
-    allItems.users,
-    allItems.operating_rooms,
-    allItems.settings,
-  ],
+const buildItem = (
+  base: string,
+  item: { label: string; icon: any; slug: string }
+): SidebarItem => {
+  // ✅ GLOBAL ROUTES (no base path)
+  const globalRoutes = ["videos","reports","ai","audit"];
 
-  department: [
-    allItems.dashboard,
-    allItems.surgeries,
-    allItems.videos,
-    allItems.PendingVideos,
-    allItems.alerts,
-    allItems.reports,
-    allItems.ai,
-  ],
+  if (globalRoutes.includes(item.slug)) {
+    return {
+      label: item.label,
+      icon: item.icon,
+      path: `/${item.slug}`, // 🔥 force global
+    };
+  }
 
-  doctor: [
-    allItems.dashboard,
-    allItems.surgeries,
-    allItems.videos,
-    allItems.alerts,
-    allItems.ai,
-  ],
+  // default behavior
+  return {
+    label: item.label,
+    icon: item.icon,
+    path: `${base}/${item.slug}`,
+  };
+};
 
-  external: [
-    allItems.dashboard,
-    allItems.videos,
-    allItems.audit,
-  ],
+/**
+ * 🔥 FULLY DYNAMIC SIDEBAR
+ */
+export const getSidebarByRole = (role: UserRole): SidebarItem[] => {
+  const base = getBasePath(role);
 
-  student: [
-    allItems.dashboard,
-    allItems.videos,
-  ],
+  const items = {
+    dashboard: buildItem(base, menu.dashboard),
+    surgeries: buildItem(base, menu.surgeries),
+    videos: buildItem(base, menu.videos),
+    pendingVideos: buildItem(base, menu.pendingVideos),
+    alerts: buildItem(base, menu.alerts),
+    reports: buildItem(base, menu.reports),
+    audit: buildItem(base, menu.audit),
+    ai: buildItem(base, menu.ai),
+    users: buildItem(base, menu.users),
+    rooms: buildItem(base, menu.rooms),
+    settings: buildItem(base, menu.settings),
+  };
 
-  system_admin: [
-    allItems.dashboard,
-    allItems.surgeries,
-    allItems.videos,
-    allItems.PendingVideos,
-    allItems.alerts,
-    allItems.reports,
-    allItems.audit,
-    allItems.ai,
-    allItems.users,
-    allItems.operating_rooms,
-    allItems.settings,
-  ],
+  const config: Record<UserRole, SidebarItem[]> = {
+    hospital_admin: Object.values(items),
+
+    system_admin: Object.values(items),
+
+    department: [
+      items.dashboard,
+      items.surgeries,
+      items.videos,
+      items.alerts,
+      items.reports,
+      items.audit,
+      items.ai,
+    ],
+
+    doctor: [
+      items.dashboard,
+      items.surgeries,
+      items.videos,
+      items.alerts,
+      items.audit,
+      items.ai,
+    ],
+
+    external: [
+      items.dashboard,
+      items.videos,
+      items.audit,
+    ],
+
+    student: [
+      items.dashboard,
+      items.videos,
+    ],
+  };
+
+  return config[role];
 };

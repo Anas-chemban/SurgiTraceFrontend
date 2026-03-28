@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       isHydrated: true,
     });
 
-    window.location.href = "/";
+    window.location.href = "/login";
   },
 
   // ✅ RESTORE (ON REFRESH)

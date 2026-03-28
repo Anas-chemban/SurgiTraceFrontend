@@ -155,8 +155,7 @@ export default function AuditPage() {
                 <p><b>IP Address:</b> {selectedLog.ip_address}</p>
 
                 <p>
-                  <b>Time:</b>{" "}
-                  {new Date(selectedLog.timestamp).toLocaleString()}
+                  <b>Time:</b> {new Date(selectedLog.timestamp).toLocaleString()}
                 </p>
 
               </div>

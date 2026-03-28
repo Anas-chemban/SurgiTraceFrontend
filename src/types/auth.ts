@@ -13,4 +13,7 @@ export type User = {
   email: string;
   name: string; // ✅ ADD THIS
   role: Role;
+
+  department?: number;
+
 };
