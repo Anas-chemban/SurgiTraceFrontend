@@ -23,7 +23,7 @@ export const RoleRoute = ({ children, allowedRoles }: Props) => {
 
   // Not logged in
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   // Role not allowed

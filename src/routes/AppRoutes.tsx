@@ -35,7 +35,7 @@ const AppRoutes = () => {
 
 
         {/* Public */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<LoginPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Dashboards */}
