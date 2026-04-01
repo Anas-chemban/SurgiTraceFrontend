@@ -14,6 +14,7 @@ export type User = {
   name: string; // ✅ ADD THIS
   role: Role;
 
-  department?: number;
+  department?: string;
+  department_id?: number;
 
 };

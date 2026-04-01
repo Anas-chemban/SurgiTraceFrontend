@@ -85,10 +85,10 @@ export default function SurgeriesPage() {
     }
   };
   const fetchAll = async () => {
-    if (!user?.department) return;
+    if (!user?.department_id) return;
     try {
       const [s, u, d, r] = await Promise.all([
-        api.get(`/surgeries/surgeries/department/${user.department}/`),
+        api.get(`/surgeries/surgeries/department/${user.department_id}/`),
         api.get("/accounts/users/"),
         api.get("/accounts/departments/"),
         api.get("/surgeries/rooms/"),
