@@ -12,17 +12,21 @@ export default function PengingVedioPage() {
   const [videos, setVideos] = useState<MissingVideo[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [selectedFiles, setSelectedFiles] = useState<{
+    [key: number]: File | null;
+  }>({});
+
+  const [uploadingId, setUploadingId] = useState<number | null>(null);
+
   //////////////////////////////////////
-  // FETCH DATA
+  // FETCH
   //////////////////////////////////////
   const fetchMissingVideos = async () => {
     try {
-      const res = await api.get(
-        "/alerts/alerts/missing-videos/"
-      );
+      const res = await api.get("/alerts/alerts/missing-videos/");
       setVideos(res.data);
     } catch (err) {
-      console.error("Error fetching missing videos", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -33,6 +37,64 @@ export default function PengingVedioPage() {
   }, []);
 
   //////////////////////////////////////
+  // SELECT FILE
+  //////////////////////////////////////
+  const handleFileSelect = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    surgeryId: number
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFiles((prev) => ({
+      ...prev,
+      [surgeryId]: file,
+    }));
+  };
+
+  //////////////////////////////////////
+  // UPLOAD
+  //////////////////////////////////////
+  const handleUpload = async (surgeryId: number) => {
+    const file = selectedFiles[surgeryId];
+    if (!file) {
+      alert("Please select a video first");
+      return;
+    }
+
+    try {
+      setUploadingId(surgeryId);
+
+      const formData = new FormData();
+      formData.append("surgery_id", String(surgeryId));
+      formData.append("video_path", file);
+
+      formData.append("recording_start", new Date().toISOString());
+      formData.append("recording_end", new Date().toISOString());
+      formData.append("duration", "3600");
+      formData.append("storage_type", "WORM");
+
+      await api.post("/videos/operation/videos/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // reset selected file
+      setSelectedFiles((prev) => ({
+        ...prev,
+        [surgeryId]: null,
+      }));
+
+      fetchMissingVideos();
+    } catch (err) {
+      console.error("Upload failed", err);
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
+  //////////////////////////////////////
   // UI
   //////////////////////////////////////
   return (
@@ -41,9 +103,7 @@ export default function PengingVedioPage() {
 
         {/* HEADER */}
         <div>
-          <h1 className="text-2xl font-semibold">
-            Pending Videos
-          </h1>
+          <h1 className="text-2xl font-semibold">Pending Videos</h1>
           <p className="text-gray-500 text-sm">
             Surgeries with missing video recordings
           </p>
@@ -64,6 +124,8 @@ export default function PengingVedioPage() {
                   <th className="p-3 text-left">Surgery ID</th>
                   <th>Surgery Name</th>
                   <th>Issue</th>
+                  <th>Select</th>
+                  <th>Upload</th>
                 </tr>
               </thead>
 
@@ -72,11 +134,43 @@ export default function PengingVedioPage() {
                   <tr key={item.surgery_id} className="border-t">
                     <td className="p-3">S{item.surgery_id}</td>
                     <td>{item.surgery_name}</td>
+
                     <td>
                       <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">
                         {item.message}
                       </span>
                     </td>
+
+                    {/* SELECT FILE */}
+                    <td>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) =>
+                          handleFileSelect(e, item.surgery_id)
+                        }
+                        className="text-sm"
+                      />
+                    </td>
+
+                    {/* UPLOAD BUTTON */}
+                    <td>
+                      <button
+                        onClick={() =>
+                          handleUpload(item.surgery_id)
+                        }
+                        disabled={
+                          !selectedFiles[item.surgery_id] ||
+                          uploadingId === item.surgery_id
+                        }
+                        className="bg-teal-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                      >
+                        {uploadingId === item.surgery_id
+                          ? "Uploading..."
+                          : "Upload"}
+                      </button>
+                    </td>
+
                   </tr>
                 ))}
               </tbody>
