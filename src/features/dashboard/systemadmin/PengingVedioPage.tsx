@@ -37,7 +37,7 @@ export default function PengingVedioPage() {
   }, []);
 
   //////////////////////////////////////
-  // SELECT FILE
+  // FILE SELECT
   //////////////////////////////////////
   const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -57,8 +57,9 @@ export default function PengingVedioPage() {
   //////////////////////////////////////
   const handleUpload = async (surgeryId: number) => {
     const file = selectedFiles[surgeryId];
+
     if (!file) {
-      alert("Please select a video first");
+      alert("Please choose a file first");
       return;
     }
 
@@ -68,7 +69,6 @@ export default function PengingVedioPage() {
       const formData = new FormData();
       formData.append("surgery_id", String(surgeryId));
       formData.append("video_path", file);
-
       formData.append("recording_start", new Date().toISOString());
       formData.append("recording_end", new Date().toISOString());
       formData.append("duration", "3600");
@@ -80,7 +80,6 @@ export default function PengingVedioPage() {
         },
       });
 
-      // reset selected file
       setSelectedFiles((prev) => ({
         ...prev,
         [surgeryId]: null,
@@ -88,7 +87,7 @@ export default function PengingVedioPage() {
 
       fetchMissingVideos();
     } catch (err) {
-      console.error("Upload failed", err);
+      console.error(err);
     } finally {
       setUploadingId(null);
     }
@@ -124,7 +123,7 @@ export default function PengingVedioPage() {
                   <th className="p-3 text-left">Surgery ID</th>
                   <th>Surgery Name</th>
                   <th>Issue</th>
-                  <th>Select</th>
+                  <th>Choose File</th>
                   <th>Upload</th>
                 </tr>
               </thead>
@@ -141,29 +140,34 @@ export default function PengingVedioPage() {
                       </span>
                     </td>
 
-                    {/* SELECT FILE */}
+                    {/* CHOOSE FILE BUTTON */}
                     <td>
-                      <input
-                        type="file"
-                        accept="video/*"
-                        onChange={(e) =>
-                          handleFileSelect(e, item.surgery_id)
-                        }
-                        className="text-sm"
-                      />
+                      <label className="cursor-pointer bg-gray-200 px-3 py-1 rounded text-sm">
+                        Choose File
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(e) =>
+                            handleFileSelect(e, item.surgery_id)
+                          }
+                        />
+                      </label>
+
+                      {/* FILE NAME */}
+                      {selectedFiles[item.surgery_id] && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {selectedFiles[item.surgery_id]?.name}
+                        </p>
+                      )}
                     </td>
 
                     {/* UPLOAD BUTTON */}
                     <td>
                       <button
-                        onClick={() =>
-                          handleUpload(item.surgery_id)
-                        }
-                        disabled={
-                          !selectedFiles[item.surgery_id] ||
-                          uploadingId === item.surgery_id
-                        }
-                        className="bg-teal-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                        onClick={() => handleUpload(item.surgery_id)}
+                        disabled={uploadingId === item.surgery_id}
+                        className="bg-teal-600 text-white px-3 py-1 rounded text-sm"
                       >
                         {uploadingId === item.surgery_id
                           ? "Uploading..."
