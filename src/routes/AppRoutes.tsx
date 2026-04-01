@@ -95,7 +95,7 @@ const AppRoutes = () => {
         <Route
           path="/admin/surgeries"
           element={
-            <RoleRoute allowedRoles={["external_entity","system_admin","student", "hospital_admin", "doctor", "department_head"]}>
+            <RoleRoute allowedRoles={["system_admin", "hospital_admin"]}>
               <SurgeriesPage />
             </RoleRoute>
           }
@@ -104,7 +104,7 @@ const AppRoutes = () => {
         <Route
           path="/department/surgeries"
           element={
-            <RoleRoute allowedRoles={["external_entity","system_admin","student", "hospital_admin", "doctor", "department_head"]}>
+            <RoleRoute allowedRoles={["department_head"]}>
               < DepartmentSurgeriesPage/>
             </RoleRoute>
           }
@@ -112,7 +112,7 @@ const AppRoutes = () => {
         <Route
           path="/doctor/surgeries"
           element={
-            <RoleRoute allowedRoles={["external_entity","system_admin","student", "hospital_admin", "doctor", "department_head"]}>
+            <RoleRoute allowedRoles={["doctor"]}>
               < DocterSurgeriesPage/>
             </RoleRoute>
           }
@@ -122,7 +122,7 @@ const AppRoutes = () => {
         <Route
             path="/admin/alerts"
             element={
-              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+              <RoleRoute allowedRoles={["system_admin","hospital_admin"]}>
                 <AlertPage />
               </RoleRoute>
             }
@@ -130,7 +130,7 @@ const AppRoutes = () => {
         <Route
             path="/department/alerts"
             element={
-              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+              <RoleRoute allowedRoles={["department_head"]}>
                 <DepartmentAlertPage />
               </RoleRoute>
             }
@@ -138,7 +138,7 @@ const AppRoutes = () => {
         <Route
             path="/doctor/alerts"
             element={
-              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+              <RoleRoute allowedRoles={["doctor"]}>
                 <DocterAlertPage />
               </RoleRoute>
             }
@@ -147,7 +147,7 @@ const AppRoutes = () => {
         <Route
             path="/admin/pending-videos"
             element={
-              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+              <RoleRoute allowedRoles={["system_admin","hospital_admin"]}>
                 <PengingVedioPage />
               </RoleRoute>
             }
@@ -183,7 +183,7 @@ const AppRoutes = () => {
         <Route
             path="/admin/settings"
             element={
-              <RoleRoute allowedRoles={["external_entity","system_admin","student","hospital_admin", "doctor", "department_head"]}>
+              <RoleRoute allowedRoles={["system_admin","hospital_admin"]}>
                 <SettingsPage />
               </RoleRoute>
             }
@@ -202,7 +202,7 @@ const AppRoutes = () => {
         <Route
           path="/admin/rooms"
           element={
-            <RoleRoute allowedRoles={["external_entity","student","system_admin", "hospital_admin", "doctor", "department_head"]}>
+            <RoleRoute allowedRoles={["system_admin", "hospital_admin"]}>
               <RoomsPage/>  
             </RoleRoute>
           }
