@@ -105,7 +105,7 @@ export default function VideoPage() {
 
                   {/* Action */}
                   <a
-                    href={`http://127.0.0.1:8000${v.video_path}`}
+                    href={`https://surgitrace.onrender.com${v.video_path}`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-teal-600 text-sm font-medium inline-block mt-2"
